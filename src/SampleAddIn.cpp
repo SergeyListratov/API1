@@ -1,23 +1,4 @@
-﻿/*
- *  Modern Native AddIn
- *  Copyright (C) 2018  Infactum
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
- *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
- *
- */
-
-#include <chrono>
+﻿#include <chrono>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
@@ -26,11 +7,11 @@
 
 #include "SampleAddIn.h"
 
-std::string SampleAddIn::extensionName() {
-    return "Sample";
+std::string RabbitAddIn::extensionName() {
+    return "RabbitMQ";
 }
 
-SampleAddIn::SampleAddIn() {
+RabbitAddIn::RabbitAddIn() {
     // Universal property. Could store any supported by native api type.
     sample_property = std::make_shared<variant_t>();
     AddProperty(L"SampleProperty", L"ОбразецСвойства", sample_property);
@@ -41,13 +22,18 @@ SampleAddIn::SampleAddIn() {
         return std::make_shared<variant_t>(std::move(s));
     });
 
+
+    AddMethod(L"send", L"Отправить", this, &RabbitAddIn::send);
+    AddMethod(L"receive", L"Получить", this, &RabbitAddIn::receive);
+
+
     // Method registration.
     // Lambdas as method handlers are not supported.
-    AddMethod(L"Add", L"Сложить", this, &SampleAddIn::add);
-    AddMethod(L"Message", L"Сообщить", this, &SampleAddIn::message);
-    AddMethod(L"CurrentDate", L"ТекущаяДата", this, &SampleAddIn::currentDate);
-    AddMethod(L"Assign", L"Присвоить", this, &SampleAddIn::assign);
-    AddMethod(L"SamplePropertyValue", L"ЗначениеСвойстваОбразца", this, &SampleAddIn::samplePropertyValue);
+    AddMethod(L"Add", L"Сложить", this, &RabbitAddIn::add);
+    AddMethod(L"Message", L"Сообщить", this, &RabbitAddIn::message);
+    AddMethod(L"CurrentDate", L"ТекущаяДата", this, &RabbitAddIn::currentDate);
+    AddMethod(L"Assign", L"Присвоить", this, &RabbitAddIn::assign);
+    AddMethod(L"SamplePropertyValue", L"ЗначениеСвойстваОбразца", this, &RabbitAddIn::samplePropertyValue);
 
     // Method registration with default arguments
     //
@@ -57,13 +43,36 @@ SampleAddIn::SampleAddIn() {
     //        def_args.insert({0, 5});
     //        AddMethod(u"Sleep", u"Ожидать", this, &SampleAddIn::sleep, std::move(def_args));
     //
-    AddMethod(L"Sleep", L"Ожидать", this, &SampleAddIn::sleep, {{0, 5}});
+    AddMethod(L"Sleep", L"Ожидать", this, &RabbitAddIn::sleep, {{0, 5}});
 
 }
 
+
+variant_t RabbitAddIn::send(const variant_t& q, const variant_t& d) {
+    //Верднуть статус записи данных d в очередь q от сервера RabbitMQ
+    return std::string{ std::get<std::string>(q) + std::get<std::string>(d) };
+
+}
+
+
+variant_t RabbitAddIn::receive(const variant_t& q) {
+    //Верднуть данные d из очереди q от сервера RabbitMQ либо статус???
+
+    std::string d1 = "{JSON1}";
+    std::string d2 = "{JSON2}";
+    if (std::get<std::string>(q) == "1") {
+        return std::string{ d1 };
+    }
+    else {
+        return std::string{ d2 };
+    }
+}
+
+
+
 // Sample of addition method. Support both integer and string params.
 // Every exceptions derived from std::exceptions are handled by components API
-variant_t SampleAddIn::add(const variant_t &a, const variant_t &b) {
+variant_t RabbitAddIn::add(const variant_t &a, const variant_t &b) {
     if (std::holds_alternative<int32_t>(a) && std::holds_alternative<int32_t>(b)) {
         return std::get<int32_t>(a) + std::get<int32_t>(b);
     } else if (std::holds_alternative<std::string>(a) && std::holds_alternative<std::string>(b)) {
@@ -73,7 +82,7 @@ variant_t SampleAddIn::add(const variant_t &a, const variant_t &b) {
     }
 }
 
-void SampleAddIn::message(const variant_t &msg) {
+void RabbitAddIn::message(const variant_t &msg) {
     std::visit(overloaded{
             [&](const std::string &v) { AddError(ADDIN_E_INFO, extensionName(), v, false); },
             [&](const int32_t &v) {
@@ -94,7 +103,7 @@ void SampleAddIn::message(const variant_t &msg) {
     }, msg);
 }
 
-void SampleAddIn::sleep(const variant_t &delay) {
+void RabbitAddIn::sleep(const variant_t &delay) {
     using namespace std;
     // It safe to get any type from variant.
     // Exceptions are handled by component API.
@@ -102,17 +111,17 @@ void SampleAddIn::sleep(const variant_t &delay) {
 }
 
 // Out params support option must be enabled for this to work
-void SampleAddIn::assign(variant_t &out) {
+void RabbitAddIn::assign(variant_t &out) {
     out = true;
 }
 
 // Despite that you can return property value through method this is not recommended
 // due to unwanted data copying
-variant_t SampleAddIn::samplePropertyValue() {
+variant_t RabbitAddIn::samplePropertyValue() {
     return *sample_property;
 }
 
-variant_t SampleAddIn::currentDate() {
+variant_t RabbitAddIn::currentDate() {
     using namespace std;
     tm current{};
     time_t t = time(nullptr);
