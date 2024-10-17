@@ -25,7 +25,7 @@ if (ANDROID)
 endif ()
 
 add_library(${TARGET} SHARED
-        ${SOURCES})
+        ${SOURCES}  )
 
 target_compile_definitions(${TARGET} PRIVATE
         UNICODE
@@ -40,7 +40,16 @@ if (OUT_PARAMS)
 endif ()
 
 target_include_directories(${TARGET} PRIVATE
-        include)
+        include
+        PUBLIC ${CMAKE_HOME_DIRECTORY}/modules/include
+        
+)
+
+target_link_directories(${PROJECT_NAME} PUBLIC ${CMAKE_HOME_DIRECTORY}/modules/lib)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC ${CMAKE_HOME_DIRECTORY}/modules/lib/SimpleAmqpClient.7.lib ${CMAKE_HOME_DIRECTORY}/modules/lib/rabbitmq.4.lib)
+
+
 
 if (WIN32 AND NOT MSVC)
     message(FATAL_ERROR "Must be compiled with MSVC on Windows")

@@ -7,6 +7,11 @@
 
 #include "SampleAddIn.h"
 
+#include <iostream>
+#include <SimpleAmqpClient/SimpleAmqpClient.h>
+
+
+
 std::string RabbitAddIn::extensionName() {
     return "RabbitMQ";
 }
@@ -50,8 +55,27 @@ RabbitAddIn::RabbitAddIn() {
 
 variant_t RabbitAddIn::send(const variant_t& q, const variant_t& d) {
     //Верднуть статус записи данных d в очередь q от сервера RabbitMQ
-    return std::string{ std::get<std::string>(q) + std::get<std::string>(d) };
 
+    std::string m1 = "[x] send ";
+
+    std::string queue_name = std::get<std::string>(q);
+
+    std::string message = std::get<std::string>(d);
+
+    std::string uri = "amqp://rabbit:mq@173.34.4.16:5672";
+
+    AmqpClient::Channel::OpenOpts opts = AmqpClient::Channel::OpenOpts::FromUri(uri);
+
+    AmqpClient::Channel::ptr_t channel = AmqpClient::Channel::Open(opts);
+
+    channel->DeclareQueue(queue_name, false, true, false, false);
+  
+    channel->BasicPublish("", queue_name, AmqpClient::BasicMessage::Create(message));
+
+
+    return { m1 + message };
+
+    //return std::string{ std::get<std::string>(q) + std::get<std::string>(d) };
 }
 
 
