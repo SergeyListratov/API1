@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
+#include "RabbitClient.h"
 
 
 
@@ -56,40 +57,28 @@ RabbitAddIn::RabbitAddIn() {
 variant_t RabbitAddIn::send(const variant_t& q, const variant_t& d) {
     //Верднуть статус записи данных d в очередь q от сервера RabbitMQ
 
-    std::string m1 = "[x] send ";
-
     std::string queue_name = std::get<std::string>(q);
 
     std::string message = std::get<std::string>(d);
 
-    std::string uri = "amqp://rabbit:mq@173.34.4.16:5672";
+    RabbitClient rabbitclient;
+    
+    std::string res = rabbitclient.send(queue_name, message);
 
-    AmqpClient::Channel::OpenOpts opts = AmqpClient::Channel::OpenOpts::FromUri(uri);
-
-    AmqpClient::Channel::ptr_t channel = AmqpClient::Channel::Open(opts);
-
-    channel->DeclareQueue(queue_name, false, true, false, false);
-  
-    channel->BasicPublish("", queue_name, AmqpClient::BasicMessage::Create(message));
-
-
-    return { m1 + message };
-
-    //return std::string{ std::get<std::string>(q) + std::get<std::string>(d) };
+    return res;
 }
 
 
 variant_t RabbitAddIn::receive(const variant_t& q) {
     //Верднуть данные d из очереди q от сервера RabbitMQ либо статус???
 
-    std::string d1 = "{JSON1}";
-    std::string d2 = "{JSON2}";
-    if (std::get<std::string>(q) == "1") {
-        return std::string{ d1 };
-    }
-    else {
-        return std::string{ d2 };
-    }
+    std::string queue_name = std::get<std::string>(q);
+
+    RabbitClient rabbitclient;
+
+    std::string res = rabbitclient.receive(queue_name);
+
+    return res;
 }
 
 
