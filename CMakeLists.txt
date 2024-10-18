@@ -25,7 +25,7 @@ if (ANDROID)
 endif ()
 
 add_library(${TARGET} SHARED
-        ${SOURCES}  )
+        ${SOURCES}   "src/RabbitClient.cpp" "src/RabbitClient.h")
 
 target_compile_definitions(${TARGET} PRIVATE
         UNICODE
