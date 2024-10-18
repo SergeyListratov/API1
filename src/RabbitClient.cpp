@@ -1,11 +1,10 @@
-#include <iostream>
 #include <SimpleAmqpClient/SimpleAmqpClient.h>
 #include "RabbitClient.h"
 
 
 std::string RabbitClient::send(std::string q, std::string d)
 {
- 
+
     std::string m1 = "[x] send ";
 
     std::string queue_name = q;
@@ -14,13 +13,13 @@ std::string RabbitClient::send(std::string q, std::string d)
 
     std::string uri = "amqp://rabbit:mq@173.34.4.16:5672";
 
-    AmqpClient::Channel::OpenOpts opts = AmqpClient::Channel::OpenOpts::FromUri(uri);
+    //AmqpClient::Channel::OpenOpts opts = AmqpClient::Channel::OpenOpts::FromUri(uri);
 
-    //AmqpClient::Channel::ptr_t channel = AmqpClient::Channel::Open(opts);
+     //AmqpClient::Channel::ptr_t channel = AmqpClient::Channel::Open(opts);
 
-    //channel->DeclareQueue(queue_name, false, true, false, false);
+     //channel->DeclareQueue(queue_name, false, true, false, false);
 
-    //channel->BasicPublish("", queue_name, AmqpClient::BasicMessage::Create(message));
+     //channel->BasicPublish("", queue_name, AmqpClient::BasicMessage::Create(message));*/
 
 
     return { m1 + "###" + message };
@@ -39,7 +38,6 @@ std::string RabbitClient::receive(std::string q)
     std::string message = "{JSON1}";
     if (queue_name != "1") {
         message = queue_name;
-    }
 
     std::string uri = "amqp://rabbit:mq@173.34.4.16:5672";
 
@@ -60,8 +58,10 @@ std::string RabbitClient::receive(std::string q)
     //channel->BasicCancel(consumer_tag);
 
 
-     return { m1 + "###" + message };
+    return { m1 + "###" + message };
 
-    
+    }
 }
+
+
 
